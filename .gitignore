@@ -38,4 +38,4 @@ ehthumbs.db
 # Lockfiles for other package managers (if not used)
 yarn.lock
 pnpm-lock.yaml
-src/supabaseClient.js
+# src/supabaseClient.js
