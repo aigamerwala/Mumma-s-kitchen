@@ -8,20 +8,19 @@ export const Footer = () => {
       <div className="footer-content">
         {/* About Library */}
         <div className="footer-section about">
-          <h2>📚 Library Management System</h2>
+          <h2>Mumma's Kitchen</h2>
           <p>
-            Our Library Management System provides seamless access to books,
-            digital resources, and study areas for students and researchers.
+            Where we serve delicious and healthy meals made with love. Our mission is to provide nutritious food that nourishes both body and soul. Join us for a culinary journey that celebrates the flavors of home-cooked meals.
           </p>
         </div>
 
         {/* Quick Links */}
         <div className="footer-section links">
           <h3>🔗 Quick Links</h3>
-          <ul>
+          <ul className="ml-8 ">
             <li><a href="/Main">Home</a></li>
-            <li><a href="/Profile">Profile</a></li>
-            <li><a href="/Books">Books</a></li>
+            <li><a href="/Profile">Order</a></li>
+            <li><a href="/Books">Support</a></li>
             <li><a href="/Enquiry">Enquiry</a></li>
           </ul>
         </div>
@@ -29,9 +28,9 @@ export const Footer = () => {
         {/* Contact Information */}
         <div className="footer-section contact">
           <h3>📞 Contact Us</h3>
-          <p>Main Library, IITRAM colllege , Ahmedabad</p>
-          <p>Phone: (123) 456-7890</p>
-          <p>Email: iitramlibrary@gmail.com</p>
+          <p>Sector 15, Faridabad, Haryana</p>
+          <p>Phone: +91 1234567890</p>
+          <p>Email: mumma.kitchen@gmail.com</p>
         </div>
 
         {/* Newsletter Subscription */}

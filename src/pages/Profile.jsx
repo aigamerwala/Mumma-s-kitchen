@@ -266,18 +266,18 @@ function Profile() {
 
                 {/* Main Buttons */}
                 <div className="flex flex-col items-center mt-6 gap-4">
-                    {["Issued Books", "Returned Books", "Return Due", "Requested Books", "Transactions"].map((label) => (
+                    {["My Account", "Orders", "Saved Addresses", "Payment Methods", "Transactions"].map((label) => (
                         <motion.button
                             key={label}
                             whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }}
                             className={`w-64 bg-gray-800 text-white px-5 py-3 rounded-lg text-lg font-semibold transition-all hover:bg-gray-700 ${label === "Late Fees" && totalLateFees === 0 ? "opacity-50 cursor-not-allowed" : ""
                                 }`}
                             onClick={() => {
-                                if (label === "Issued Books") openPopup("issuedbooks");
-                                if (label === "Returned Books") openPopup("returnedbooks");
-                                if (label === "Return Due") openPopup("returndue");
+                                if (label === "My Account") openPopup("issuedbooks");
+                                if (label === "Orders") openPopup("returnedbooks");
+                                if (label === "Saved Addresses") openPopup("returndue");
                                 if (label === "Transactions") openPopup("transactions");
-                                if (label === "Requested Books") openPopup("requestedbooks");
+                                if (label === "Payment Methods") openPopup("requestedbooks");
                                 if (label === "Reserved Books") openPopup("reservedbooks");
                             }}
                         >
