@@ -71,7 +71,7 @@ const Main = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative z-10"
+          className="relative"
         >
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold drop-shadow-lg">
             Welcome to Mumma's Kitchen
@@ -114,17 +114,20 @@ const Main = () => {
                     className="w-full h-48 object-cover"
                     onError={(e) => (e.target.src = "/placeholder.jpg")}
                   />
-                  <div className="p-4 flex flex-col flex-grow">
+                  <div className="text-center p-4 flex flex-col flex-grow">
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
                       {dish.items.name}
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">by {dish.items.chef}</p>
-                    <button
-                      className="mt-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      onClick={() => handleOrderDish(dish.items.name)}
-                    >
-                      Order Now
-                    </button>
+                    <div>
+
+                      <button
+                        className="mt-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        onClick={() => handleOrderDish(dish.items.name)}
+                      >
+                        Order Now
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))
@@ -151,11 +154,10 @@ const Main = () => {
             (day) => (
               <button
                 key={day}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  selectedDay === day
-                    ? "bg-blue-700 text-white"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedDay === day
+                  ? "bg-blue-700 text-white"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+                  }`}
                 onClick={() => setSelectedDay(day)}
               >
                 {day}
@@ -190,18 +192,20 @@ const Main = () => {
                     className="h-48 object-cover"
                     onError={(e) => (e.target.src = "/placeholder.jpg")}
                   />
-                  <div className="p-4 flex flex-col flex-grow">
+                  <div className="p-4 flex flex-col flex-grow text-center">
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
                       {item.items.name}
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">{item.items.description}</p>
                     <p className="text-sm text-gray-600 mt-1">Chef: {item.items.chef}</p>
-                    <button
-                      className="mt-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      onClick={() => handleOrderDish(item.items.name)}
-                    >
-                      Order Now
-                    </button>
+                    <div>
+                      <button
+                        className="mt-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        onClick={() => handleOrderDish(item.items.name)}
+                      >
+                        Order Now
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))
