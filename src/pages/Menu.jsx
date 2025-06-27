@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import NavbarOrders from "../components/NavbarOrders";
 
-const Order = () => {
+const Menu = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -310,4 +310,4 @@ const Order = () => {
   );
 };
 
-export default Order;
+export default Menu;

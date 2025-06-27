@@ -92,9 +92,7 @@ const Navbar = () => {
     };
     if (isLoggedIn) {
       fetchNotifications();
-    }// Fetch existing notifications
-
-    // Listen for real-time notifications
+    }
     const subscription = supabase
       .channel("notifications")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, (payload) => {
@@ -145,12 +143,12 @@ const Navbar = () => {
         <ul className="hidden md:flex space-x-6 text-lg gap-4 font-bold">
           {[
             { path: "/", label: "Home" },
-            { path: isAdmin ? "/dashboard" : "/order",
-              label: isAdmin ? "Dashboard" : "Order"
+            { path: isAdmin ? "/dashboard" : "/menu",
+              label: isAdmin ? "Dashboard" : "Menu"
             },
             {
-              path: isAdmin ? "/enquiry-reviews" : "/Enquiry",
-              label: isAdmin ? "EnquiryReviews" : "Enquiry",
+              path: isAdmin ? "/enquiry-reviews" : "/support",
+              label: isAdmin ? "Support Tickets" : "Support",
             },
             { path: "/profile", label: "Profile" },
           ].map((item) => (

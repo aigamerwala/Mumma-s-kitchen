@@ -5,11 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../supabaseClient";
 import { addBook } from "../api";
 import ReservationActionModal from "../components/modals/ReservationActionModal";
-import BookRequestActionModal from "../components/modals/BookRequestActionModal";
-import ReturnApprovalModal from "../components/modals/ReturnApprovalModal";
-
-
-// Dummy data for admin features
 
 const AdminProfile = () => {
   const navigate = useNavigate();
@@ -40,12 +35,11 @@ const AdminProfile = () => {
   const [modifyBooksPopup, setModifyBooksPopup] = useState(false);
   const [editBookPopup, setEditBookPopup] = useState(null); // { id, title, author, isbn, ... }
   const [deleteBooksPopup, setDeleteBooksPopup] = useState(false);
-  // const [isbnInput, setIsbnInput] = useState("");
   const [copies, setCopies] = useState(1);
   const [selectedReservation, setSelectedReservation] = useState(null);
-  // const [successPopup, setSuccessPopup] = useState(null);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [selectedReturn, setSelectedReturn] = useState(null);
+  const [file, setFile] = useState(null);
+  const [uuid, setUuid] = useState("");
+
 
   const [manualBookData, setManualBookData] = useState({
     coverImage: "",
@@ -72,7 +66,7 @@ const AdminProfile = () => {
       if (userError || userData.role !== "admin") return navigate("/profile", { replace: true });
 
       setUser(userData);
-      setUserPhoto(userData.profile_picture || "https://via.placeholder.com/150");
+      setUserPhoto(userData.profile_picture);
       setLoading(false);
       fetchAllUsers();
       fetchBookRequests();
@@ -83,6 +77,23 @@ const AdminProfile = () => {
 
     fetchProfile();
   }, [navigate]);
+  const uploadImage = async (file) => {
+    const fileName = `${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('items-img')
+      .upload(fileName, file);
+
+    if (error) {
+      console.error("Upload error", error);
+      return null;
+    }
+
+    const publicUrl = supabase.storage
+      .from('items-img')
+      .getPublicUrl(fileName).data.publicUrl;
+    return publicUrl;
+  };
+
 
   const fetchAllUsers = async () => {
     const { data, error } = await supabase.from("users").select("id, name, email, role");
@@ -174,6 +185,56 @@ const AdminProfile = () => {
       setUser({ ...user, profile_picture: imageUrl });
     }
   };
+  const handleUpload = async (e) => {
+    e.preventDefault();
+
+    if (!file || !uuid) {
+      alert("Please provide both UUID and an image file.");
+      return;
+    }
+
+    const fileName = `${uuid}_${Date.now()}_${file.name}`;
+
+    try {
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase
+        .storage
+        .from("items-img")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("Image Upload error:", uploadError.message);
+        throw uploadError;
+      }
+
+      // Get Public URL
+      const { data: publicUrlData } = supabase
+        .storage
+        .from("items-img")
+        .getPublicUrl(fileName);
+
+      const imageUrl = publicUrlData?.publicUrl;
+
+      // Store URL in DB
+      const { error: dbError } = await supabase
+        .from("items")
+        .update({ image_url: imageUrl })
+        .eq("id", uuid);
+
+      if (dbError) throw dbError;
+
+      alert("Image uploaded and URL saved successfully!");
+      setFile(null);
+      setUuid("");
+    } catch (error) {
+      console.error("Modification failed:", error.message);
+      alert("Failed to upload image or update database.");
+    }
+  };
+
 
   const handleAddBook = async () => {
     if (!isbn) {
@@ -191,38 +252,6 @@ const AdminProfile = () => {
       navigate("/profile");
     }
   };
-
-  // const handlemanualsubmit = async () => {
-  //   if (!manualBookData.title || !manualBookData.author || !manualBookData.publicationDate || !manualBookData.copies) {
-  //     alert("Please fill in all required fields.");
-  //     return;
-  //   }
-  //   const book = {
-  //     title: manualBookData.title || "Unknown",
-  //     author: manualBookData.authors ? manualBookData.authors.join(", ") : "Unknown",
-  //     isbn: isbn,
-  //     genre: manualBookData.categories ? manualBookData.categories[0] : "Unknown",
-  //     language: manualBookData.language || "Unknown",
-  //     edition: manualBookData.publicationDate || "Unknown",
-  //     copies: manualBookData.copies || 1 // Default to 1 copy
-  //   };
-  //   const { data, error } = await supabase.from("books").insert([book]);
-  //   if (error) throw error;
-  //   setSuccessPopup("Book successfully added!");
-  //   setTimeout(() => navigate("/profile"), 1000);
-  // };
-
-  // const handleAddBookByIsbn = async () => {
-  //   if (!isbnInput) return;
-  //   const newBook = { id: Date.now(), title: `Book_${isbnInput}`, author: "Unknown", isbn: isbnInput };
-  //   setBooks([...books, newBook]);
-  //   setIsbnPopup(false);
-  //   setAddBooksPopup(false);
-  //   setManageBooksPopup(false);
-  //   setIsbnInput("");
-  //   setSuccessPopup("Book successfully added!");
-  //   setTimeout(() => navigate("/profile"), 1000);
-  // };
 
   const handleManualAddSubmit = async () => {
     if (!manualBookData.title || !manualBookData.author || !manualBookData.publicationDate || !manualBookData.copies) {
@@ -248,7 +277,7 @@ const AdminProfile = () => {
   const fetchBooks = async () => {
     const { data, error } = await supabase.from("books").select("*");
     if (!error) setBooks(data);
-    
+
   };
 
   const handleEditBook = (book) => {
@@ -302,53 +331,6 @@ const AdminProfile = () => {
     }
     fetchBooks();
   };
-  const handleApproveReturnRequest = async (request) => {
-    const today = new Date().toISOString();
-  
-    // Calculate late fees (optional logic)
-    const dueDate = new Date(request.due_date);
-    const now = new Date();
-    const lateDays = now > dueDate ? Math.floor((now - dueDate) / (1000 * 60 * 60 * 24)) : 0;
-    const lateFees = lateDays * 5;
-  
-    try {
-      // 1. Update issued_books table
-      const { error: updateError } = await supabase
-        .from("issued_books")
-        .update({
-          returned: true,
-          return_date: today,
-          lateFees: lateFees,
-          return_request: "approved"
-        })
-        .eq("id", request.id);
-  
-      if (updateError) throw updateError;
-  
-      // 2. Increase book copies
-      const { error: bookError } = await supabase
-        .from("books")
-        .update({ copies: request.books.copies + 1 })
-        .eq("id", request.book_id);
-  
-      if (bookError) throw bookError;
-  
-      // 3. Add notification
-      await supabase.from("notifications").insert([
-        {
-          user_id: request.user_id,
-          message: `✅ Your return request for "${request.books.title}" has been approved.`,
-        }
-      ]);
-  
-      alert("Return request approved!");
-      window.location.reload(); // or refetch data
-    } catch (err) {
-      console.error("❌ Approve failed:", err.message);
-      alert("Failed to approve return request.");
-    }
-  };
-  
 
   const calculateTotalFee = () => {
     return transactions.reduce((total, transaction) => total + (transaction.lateFees || 0), 0);
@@ -380,7 +362,7 @@ const AdminProfile = () => {
 
         <div className="flex flex-col items-center mt-6 gap-4">
           <motion.button whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }} className="w-64 bg-blue-600 text-white px-5 py-3 rounded-lg text-lg font-semibold transition-all hover:bg-blue-700" onClick={() => setUsersPopup(true)}>View All Users</motion.button>
-          <motion.button whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }} className="w-64 bg-blue-600 text-white px-5 py-3 rounded-lg text-lg font-semibold transition-all hover:bg-blue-700" onClick={() => setManageBooksPopup(true)}>Manage Books</motion.button>
+          <motion.button whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }} className="w-64 bg-blue-600 text-white px-5 py-3 rounded-lg text-lg font-semibold transition-all hover:bg-blue-700" onClick={() => setManageBooksPopup(true)}>Manage Dish</motion.button>
           <motion.button whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }} className="w-64 bg-blue-600 text-white px-5 py-3 rounded-lg text-lg font-semibold transition-all hover:bg-blue-700" onClick={() => setRequestsPopup(true)}>Approve Book Requests</motion.button>
           <motion.button whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }} className="w-64 bg-blue-600 text-white px-5 py-3 rounded-lg text-lg font-semibold transition-all hover:bg-blue-700" onClick={() => setReturnRequestsPopup(true)}>Approve Return Request</motion.button>
           <motion.button whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }} className="w-64 bg-blue-600 text-white px-5 py-3 rounded-lg text-lg font-semibold transition-all hover:bg-blue-700" onClick={() => setReservationsPopup(true)}>Approve Reservation</motion.button>
@@ -431,7 +413,7 @@ const AdminProfile = () => {
           <>
             <motion.div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setManageBooksPopup(false)} />
             <motion.div className="fixed bg-gray-800 text-white p-6 rounded-xl shadow-lg w-[600px] z-50" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
-              <h3 className="text-lg font-semibold mb-4">Manage Books</h3>
+              <h3 className="text-lg font-semibold mb-4">Manage Dishes</h3>
               <div className="flex justify-between gap-4">
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }}
@@ -490,32 +472,57 @@ const AdminProfile = () => {
       </AnimatePresence>
 
       <AnimatePresence>
-        {isbnPopup && (
-          <>
-            <motion.div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-70" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsbnPopup(false)} />
-            <motion.div className="fixed bg-gray-800 text-white p-6 rounded-xl shadow-lg w-96 z-70" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
-              <h3 className="text-lg font-semibold mb-4">Add Book by ISBN</h3>
-              <input
-                type="text"
-                value={isbn}
-                onChange={(e) => setIsbn(e.target.value)}
-                placeholder="Enter ISBN Number"
-                className="w-full p-2 border rounded-lg bg-gray-700 text-white mb-4"
-              />
-              <input type="number"
-                value={copies}
-                onChange={(e) => setCopies(e.target.value)}
-                placeholder="Enter Number of Copies"
-                className="w-full p-2 border rounded-lg bg-gray-700 text-white mb-4" />
-              <div className="flex justify-end gap-2">
-                <button className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all" onClick={() => setIsbnPopup(false)}>Cancel</button>
-                <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all" onClick={handleAddBook}>Add</button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
+  {isbnPopup && (
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => setIsbnPopup(false)}
+    >
+      <motion.div
+        className="bg-gray-800 text-white p-6 rounded-xl shadow-lg w-96 z-60 relative"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()} // Prevent backdrop click
+      >
+        <form onSubmit={handleUpload} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Enter UUID"
+            value={uuid}
+            onChange={(e) => setUuid(e.target.value)}
+            required
+            className="w-full px-4 py-2 rounded-md bg-gray-700 text-white placeholder-gray-400"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFile(e.target.files[0])}
+            required
+            className="w-full text-white"
+          />
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              className="bg-gray-500 px-4 py-2 rounded-lg hover:bg-gray-600 transition-all"
+              onClick={() => setIsbnPopup(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-green-500 px-4 py-2 rounded-lg hover:bg-green-600 transition-all"
+            >
+              Upload
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
       <AnimatePresence>
         {manualAddPopup && (
           <>
@@ -699,12 +706,6 @@ const AdminProfile = () => {
                   <motion.div key={index} className="flex justify-between p-3 bg-gray-700 rounded-lg" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
                     <span className="w-1/4">{reservation.reserved_from_user.name}</span><span className="w-1/4 text-center">{reservation.books.title}</span><span className="w-1/4 text-center capitalize">{reservation.status}</span>
                     <span className="w-1/4 text-right flex gap-2 justify-end">
-                      {/* {reservation.status === "pending" && (
-                        <>
-                          <button className="bg-green-500 text-white px-2 py-1 rounded-lg hover:bg-green-600 transition-all" onClick={() => handleApproveReservation(reservation.id)}>Approve</button>
-                          <button className="bg-red-500 text-white px-2 py-1 rounded  -lg hover:bg-red-600 transition-all" onClick={() => handleRejectReservation(reservation.id)}>Reject</button>
-                        </>
-                      )} */}
                       {reservation.status === "pending" && (
                         <button
                           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"

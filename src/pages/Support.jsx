@@ -91,7 +91,7 @@ const Enquiry = () => {
 
   return (
     <div className="max-w-2xl mx-auto mt-12 p-8 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border border-gray-200 fade-in transform hover:scale-105 transition-all duration-500 mb-20">
-      <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Inquiry Form</h2>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Ticket Submission</h2>
       <p className="text-gray-600 text-center mb-10 text-lg">We will get in touch with you shortly</p>
       <form className="space-y-8">
         <div className="flex justify-between space-x-6">
