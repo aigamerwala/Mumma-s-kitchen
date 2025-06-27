@@ -185,7 +185,7 @@ const Main = () => {
                   whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
                 >
                   <img
-                    src={item.items.image}
+                    src={item.items.image_url}
                     alt={item.items.name}
                     className="h-48 object-cover"
                     onError={(e) => (e.target.src = "/placeholder.jpg")}
