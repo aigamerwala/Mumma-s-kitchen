@@ -162,21 +162,19 @@ const Menu = () => {
               <p>Loading dishes...</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {days.map((day) => (
+                {filteredDishes.map((dish) => (
                   <motion.div
-                    key={day}
-                    ref={refs[day]}
-                    data-day={day}
+                    key={dish.id}
                     className="p-4 bg-gray-100 shadow-md rounded-lg"
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                     whileHover={{ scale: 1.05, boxShadow: "0 5px 15px rgba(0,0,0,0.2)" }}
                   >
-                    <h3 className="font-semibold text-lg">{day}</h3>
-                    {/* <p className="text-sm text-gray-600">Chef: {day.chef}</p>
-                    <p className="text-sm text-gray-600">Category: {day.category}</p>
-                    <p className="text-sm text-gray-600">Price: ${day.price.toFixed(2)}</p>
+                    <h3 className="font-semibold text-lg">{dish.name}</h3>
+                    <p className="text-sm text-gray-600">Chef: {dish.chef}</p>
+                    <p className="text-sm text-gray-600">Category: {dish.category}</p>
+                    <p className="text-sm text-gray-600">Price: ${dish.price.toFixed(2)}</p>
                     <p className="text-sm text-gray-600">Available: {dish.available}</p>
                     <div className="flex gap-4 mt-2">
                       <button
@@ -193,14 +191,24 @@ const Menu = () => {
                         onClick={() => setSelectedDish(dish)}
                       >
                         View Details
-                      </button> 
+                      </button>
                     </div>
-                      */}
                   </motion.div>
                 ))}
               </div>
             )}
           </div>
+
+          <div className="flex justify-center items-center mt-4">
+            {loadingMore && <p>Loading more dishes...</p>}
+          </div>
+          <button
+            className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            onClick={loadMoreDishes}
+            disabled={loadingMore}
+          >
+            {loadingMore ? "Loading..." : "Load More Dishes"}
+          </button>
         </div>
       </div>
 
