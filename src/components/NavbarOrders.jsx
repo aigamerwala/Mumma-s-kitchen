@@ -18,11 +18,11 @@ const NavbarOrders = ({days,activeDay,onDayClick}) => {
         {days.map((day) => (
           <li key={day}>
             <Link
-              to={`/orders/${day}`}
+              to={`/menu/${day}`}
               className={`block hover:text-blue-400 ${activeDay === day ? "text-blue-400 font-bold" : ""}`}
               onClick={() => onDayClick(day)}
             >
-              {day.charAt(0).toUpperCase() + day.slice(1)} Specials
+              {day.charAt(0).toUpperCase() + day.slice(1)}
             </Link>
           </li>
         ))}

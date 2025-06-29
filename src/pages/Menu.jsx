@@ -3,18 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import NavbarOrders from "../components/NavbarOrders";
+import { supabase } from "../supabaseClient";
 
 const Menu = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedDish, setSelectedDish] = useState(null);
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const days = ["Available Dishes", "Sunday Specials", "Monday Specials", "Tuesday Specials", "wednesday Specials", "Thursday Specials", "Friday Specials", "Saturday Specials"];
   const scrollToDay = (day) => {
     refs[day]?.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -24,29 +24,21 @@ const Menu = () => {
   }, {});
   const [activeDay, setActiveDay] = useState("sunday");
 
-  // Simulated data fetch for dishes
+
   useEffect(() => {
     const fetchDishes = async () => {
-      setLoadingMore(true);
       try {
-        const dummyDishes = [
-          {
-            id: `${page}-1`,
-            name: "Butter Chicken",
-            chef: "A. Sharma",
-            category: "Non-Veg",
-            description: "Creamy tomato-based chicken curry with rich spices.",
-            image: "https://via.placeholder.com/300",
-            price: 15.99,
-            available: 10,
-          },
-        ];
-        setDishes((prevDishes) => [...prevDishes, ...dummyDishes]);
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("specials")
+          .select("*,items(*)")
+        if (error) throw error;
+        else {console.log("dish:",data)
+        setDishes(data || [])};
       } catch (error) {
         console.error("Error fetching dishes:", error);
       } finally {
         setLoading(false);
-        setLoadingMore(false);
       }
     };
 
@@ -79,14 +71,14 @@ const Menu = () => {
   // Filter dishes
   const filteredDishes = dishes.filter((dish) => {
     return (
-      dish.name.toLowerCase().includes(search.toLowerCase()) &&
+      dish.items.name && dish.items.name.toLowerCase().includes(search.toLowerCase()) &&
       (categoryFilter === "" || dish.category === categoryFilter)
     );
   });
 
   // Handle dish order
   const handleOrderDish = (dishId, dishName, available) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("supabasetoken");
     if (!token) {
       alert("You must be logged in to place an order.");
       navigate("/SignIn");
@@ -105,11 +97,11 @@ const Menu = () => {
       )
     );
   };
+  const dishesByDay = days.reduce((acc, day) => {
+    acc[day] = filteredDishes.filter(dish => dish.day && day.toLowerCase().includes(dish.day.toLowerCase()));
+    return acc;
+  }, {});
 
-  // Load more dishes
-  const loadMoreDishes = () => {
-    setPage((prevPage) => prevPage + 1);
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -129,7 +121,7 @@ const Menu = () => {
         </button>
 
         <div className={`flex-1 p-6 transition-all duration-300 ${sidebarOpen ? "ml-64" : "ml-0"}`}>
-        <h1 className="text-2xl sm:text-3xl font-bold mb-4 mt-20 text-blue-700">Order Your Favorite Dishes</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4 mt-20 text-blue-700">Order Your Favorite Dishes</h1>
 
           {/* Search & Filters */}
           {/*<div className="mt-4 p-4 bg-white shadow-md rounded-lg flex flex-col md:flex-row items-center gap-4">
@@ -155,52 +147,58 @@ const Menu = () => {
 
           {/* Dish Collection */}
           <div className="mt-6">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-gray-800">
-              Available Dishes
-            </h2>
-            {loading ? (
-              <p>Loading dishes...</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {days.map((day) => (
-                  <motion.div
-                    key={day}
-                    ref={refs[day]}
-                    data-day={day}
-                    className="p-4 bg-gray-100 shadow-md rounded-lg"
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    whileHover={{ scale: 1.05, boxShadow: "0 5px 15px rgba(0,0,0,0.2)" }}
-                  >
-                    <h3 className="font-semibold text-lg">{day}</h3>
-                    {/* <p className="text-sm text-gray-600">Chef: {day.chef}</p>
-                    <p className="text-sm text-gray-600">Category: {day.category}</p>
-                    <p className="text-sm text-gray-600">Price: ${day.price.toFixed(2)}</p>
-                    <p className="text-sm text-gray-600">Available: {dish.available}</p>
-                    <div className="flex gap-4 mt-2">
-                      <button
-                        onClick={() => handleOrderDish(dish.id, dish.name, dish.available)}
-                        className={`px-3 py-1 rounded text-white ${dish.available > 0
-                          ? "bg-green-500 hover:bg-green-600"
-                          : "bg-gray-400 cursor-not-allowed"
-                          }`}
+            {days.map((day) => (
+              <div
+                key={day}
+                ref={refs[day]}
+                data-day={day}
+                className="p-4 bg-gray-100 shadow-md rounded-lg mb-6"
+              >
+                <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">{day}</h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {dishesByDay[day]?.length > 0 ? (
+                    dishesByDay[day].map((dish) => (
+                      <motion.div
+                        key={dish.id}
+                        className="p-4 bg-white shadow-md rounded-lg"
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        whileHover={{ scale: 1.05 }}
                       >
-                        {dish.available > 0 ? "Place Order" : "Out of Stock"}
-                      </button>
-                      <button
-                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        onClick={() => setSelectedDish(dish)}
-                      >
-                        View Details
-                      </button> 
-                    </div>
-                      */}
-                  </motion.div>
-                ))}
+                        <h3 className="font-semibold text-lg">{dish.items.name}</h3>
+                        <p className="text-sm text-gray-600">Chef: {dish.items.chef}</p>
+                        <p className="text-sm text-gray-600">Category: {dish.items.category}</p>
+                        <p className="text-sm text-gray-600">Price: ${dish.items.price.toFixed(2)}</p>
+                        <p className="text-sm text-gray-600">Available: {dish.items.available}</p>
+                        <div className="flex gap-4 mt-2">
+                          <button
+                            onClick={() => handleOrderDish(dish.id, dish.items.name, dish.items.available)}
+                            className={`px-3 py-1 rounded text-white ${dish.items.available
+                              ? "bg-green-500 hover:bg-green-600"
+                              : "bg-gray-400 cursor-not-allowed"
+                              }`}
+                          >
+                            {dish.items.available ? "Place Order" : "Out of Stock"}
+                          </button>
+                          <button
+                            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            onClick={() => setSelectedDish(dish)}
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500">No dishes available.</p>
+                  )}
+                </div>
               </div>
-            )}
+            ))}
           </div>
+
         </div>
       </div>
 
