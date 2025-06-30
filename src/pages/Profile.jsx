@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../supabaseClient";
+import "../styles/Menu.css"; // Ensure you have this CSS file for styles
 
 // ✅ Modal imports
 // import BookRequestModal from "../components/modals/BookRequestModal";
@@ -139,7 +140,7 @@ function Profile() {
             .from("issued_books")
             .select("*,books(*)")
             .eq("book_id", bookId)
-            // .update({ returned: true })
+        // .update({ returned: true })
         // .single();
 
         if (fetchError) {
@@ -173,7 +174,7 @@ function Profile() {
             console.error("Transaction insertion failed:", transactionsError.message);
             return;
         }
-        
+
         // Refresh data
         window.location.reload(); // or call fetchProfile() if you move it out
     };
@@ -220,7 +221,9 @@ function Profile() {
         setLateFeesPopup(false);
     };
 
-    if (loading) return <p>Loading profile...</p>;
+    if (loading) return (<div className="flex justify-center items-center h-64">
+        <div className="loader"></div>
+    </div>);
     const openPopup = (type) => setPopup(type);
 
     return (

@@ -178,11 +178,11 @@ const Menu = () => {
               <option value="Dessert">Desserts</option>
             </select>
           </div>
-          {/* Loading Spinner */}
+          
 
           {/* Dish Collection */}
           <div className="mt-6">
-            {loading ? (
+            {loading ? (  
               <div className="flex justify-center items-center h-64">
                 <div className="loader"></div>
               </div>

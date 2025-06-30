@@ -29,7 +29,7 @@ const AdminProfile = () => {
   const [commentText, setCommentText] = useState("");
   const [successPopup, setSuccessPopup] = useState(false);
   const [books, setBooks] = useState([]);
-  const [addBooksPopup, setAddBooksPopup] = useState(false);
+  const [addDishPopup, setAddDishPopup] = useState(false);
   const [isbnPopup, setIsbnPopup] = useState(false);
   const [manualAddPopup, setManualAddPopup] = useState(false);
   const [modifyBooksPopup, setModifyBooksPopup] = useState(false);
@@ -94,21 +94,9 @@ const AdminProfile = () => {
     return publicUrl;
   };
 
-
   const fetchAllUsers = async () => {
     const { data, error } = await supabase.from("users").select("id, name, email, role");
     if (!error) setAllUsers(data);
-  };
-
-  const fetchBookRequests = async () => {
-    const { data, error } = await supabase.from("book_requests").select("*, users(name)").eq("status", "pending");
-    if (!error) {
-      setBookRequests(data);
-      console.log("bookrequest data:", data)
-    } else {
-      console.log("book request error:", error);
-      setBookRequests([]);
-    }
   };
 
   const fetchReturnRequests = async () => {
@@ -418,9 +406,9 @@ const AdminProfile = () => {
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }}
                   className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all"
-                  onClick={() => setAddBooksPopup(true)}
+                  onClick={() => setAddDishPopup(true)}
                 >
-                  Add Books
+                  Add Dish
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }}
@@ -444,85 +432,94 @@ const AdminProfile = () => {
       </AnimatePresence>
 
       <AnimatePresence>
-        {addBooksPopup && (
+        {addDishPopup && (
           <>
-            <motion.div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setAddBooksPopup(false)} />
-            <motion.div className="fixed bg-gray-800 text-white p-6 rounded-xl shadow-lg w-96 z-60" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
-              <h3 className="text-lg font-semibold mb-4">Add Books</h3>
+            <motion.div
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setAddDishPopup(false)} />
+            <motion.div
+              className="fixed bg-gray-800 text-white p-6 rounded-xl shadow-lg w-96 z-60"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}>
+              <h3 className="text-lg font-semibold mb-4">Add Dish</h3>
               <div className="flex flex-col gap-4">
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }}
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
                   onClick={() => setIsbnPopup(true)}
                 >
-                  By ISBN Number
+                  Add Dish Image
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }}
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
                   onClick={() => setManualAddPopup(true)}
                 >
-                  By Manual Add
+                  Add Dish
                 </motion.button>
               </div>
-              <button className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all w-full" onClick={() => setAddBooksPopup(false)}>Close</button>
+              <button className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all w-full" onClick={() => setAddDishPopup(false)}>Close</button>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
-  {isbnPopup && (
-    <motion.div
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={() => setIsbnPopup(false)}
-    >
-      <motion.div
-        className="bg-gray-800 text-white p-6 rounded-xl shadow-lg w-96 z-60 relative"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        onClick={(e) => e.stopPropagation()} // Prevent backdrop click
-      >
-        <form onSubmit={handleUpload} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Enter UUID"
-            value={uuid}
-            onChange={(e) => setUuid(e.target.value)}
-            required
-            className="w-full px-4 py-2 rounded-md bg-gray-700 text-white placeholder-gray-400"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files[0])}
-            required
-            className="w-full text-white"
-          />
-          <div className="flex justify-end gap-2 pt-4">
-            <button
-              type="button"
-              className="bg-gray-500 px-4 py-2 rounded-lg hover:bg-gray-600 transition-all"
-              onClick={() => setIsbnPopup(false)}
+        {isbnPopup && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setAddDishPopup(false)}
+          >
+            <motion.div
+              className="bg-gray-800 text-white p-6 rounded-xl shadow-lg w-96 z-60 relative"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()} // Prevent backdrop click
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="bg-green-500 px-4 py-2 rounded-lg hover:bg-green-600 transition-all"
-            >
-              Upload
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
+              <form onSubmit={handleUpload} className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Enter UUID"
+                  value={uuid}
+                  onChange={(e) => setUuid(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 rounded-md bg-gray-700 text-white placeholder-gray-400"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFile(e.target.files[0])}
+                  required
+                  className="w-full text-white"
+                />
+                <div className="flex justify-end gap-2 pt-4">
+                  <button
+                    type="button"
+                    className="bg-gray-500 px-4 py-2 rounded-lg hover:bg-gray-600 transition-all"
+                    onClick={() => setIsbnPopup(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-green-500 px-4 py-2 rounded-lg hover:bg-green-600 transition-all"
+                  >
+                    Upload
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {manualAddPopup && (
           <>
@@ -636,14 +633,27 @@ const AdminProfile = () => {
       <AnimatePresence>
         {requestsPopup && (
           <>
-            <motion.div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRequestsPopup(false)} />
-            <motion.div className="fixed bg-gray-800 text-white p-6 rounded-xl shadow-lg w-[600px] z-50" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
+            <motion.div
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setRequestsPopup(false)} />
+            <motion.div
+              className="fixed bg-gray-800 text-white p-6 rounded-xl shadow-lg w-[600px] z-50"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}>
               <h3 className="text-lg font-semibold mb-4">Book Requests</h3>
               <div className="space-y-4 max-h-[400px] overflow-y-auto">
-                <div className="flex justify-between p-3 bg-blue-600 rounded-lg font-semibold"><span className="w-1/4">User</span><span className="w-1/4 text-center">Book Name</span><span className="w-1/4 text-center">Status</span><span className="w-1/4 text-right">Action</span></div>
+                <div className="flex justify-between p-3 bg-blue-600 rounded-lg font-semibold"><span className="w-1/4">User</span>
+                  <span className="w-1/4 text-center">Book Name</span>
+                  <span className="w-1/4 text-center">Status</span>
+                  <span className="w-1/4 text-right">Action</span></div>
                 {bookRequests.length > 0 ? bookRequests.map((request, index) => (
                   <motion.div key={index} className="flex justify-between p-3 bg-gray-700 rounded-lg" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-                    <span className="w-1/4">{request.users.name}</span><span className="w-1/4 text-center">{request.title}</span><span className="w-1/4 text-center capitalize">{request.status}</span>
+                    <span className="w-1/4">{request.users.name}</span><span className="w-1/4 text-center">{request.title}</span>
+                    <span className="w-1/4 text-center capitalize">{request.status}</span>
                     <span className="w-1/4 text-right flex gap-2 justify-end">
                       {request.status === "pending" && (
                         <>

@@ -7,7 +7,6 @@ import Menu from "../pages/Menu";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AdminProfile from "../pages/AdminProfile";
 import Enquiry from "../pages/Support";
-import Reservations from "../pages/Reservations";
 import EnquiryReviews from "../pages/EnquiryReviews";
 import Dashboard from "../components/Dashboard";
 
@@ -24,7 +23,6 @@ const AppRoutes = () => {
             <Route path="/profile" element={<Profile />} />
             <Route path="/adminprofile" element={<AdminProfile />} />
             <Route path="/support" element={<Enquiry />} />
-            <Route path="/reservations" element={<Reservations />} />
             <Route path="/enquiry-reviews" element={<EnquiryReviews />} /> 
             <Route path="/dashboard" element={<Dashboard />} /> 
             {/* 404 Page */}
