@@ -180,7 +180,7 @@ const Navbar = () => {
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
-                className="relative text-white hover:text-blue-400 transition-colors after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:w-0 after:h-[2px] after:bg-blue-400 after:transition-all after:duration-300 hover:after:w-full"
+                className="cursor-pointer relative text-white hover:text-blue-400 transition-colors after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:w-0 after:h-[2px] after:bg-blue-400 after:transition-all after:duration-300 hover:after:w-full"
                 aria-label="Logout"
               >
                 Logout
@@ -188,7 +188,7 @@ const Navbar = () => {
             ) : (
               <button
                 onClick={handleLogin}
-                className="relative text-white hover:text-blue-400 transition-colors after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:w-0 after:h-[2px] after:bg-blue-400 after:transition-all after:duration-300 hover:after:w-full"
+                className="cursor-pointer relative text-white hover:text-blue-400 transition-colors after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:w-0 after:h-[2px] after:bg-blue-400 after:transition-all after:duration-300 hover:after:w-full"
                 aria-label="Login"
               >
                 Login
