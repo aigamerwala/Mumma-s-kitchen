@@ -217,7 +217,7 @@ const Menu = () => {
                         <p className="text-sm text-gray-600">Chef: {dish.items.chef}</p>
                         <p className="text-sm text-gray-600">Category: {dish.items.category}</p>
                         <p className="text-sm text-gray-600">Price: ₹{dish.items.price.toFixed(2)}</p>
-                        <p className="text-sm text-gray-600">Available: {dish.items.in_stock}</p>
+                        <p className="text-sm text-gray-600">Available: {(dish.items.in_stock) ? "Yes" : "No"}</p>
                         <div className="flex gap-4 mt-2">
                           <button
                             onClick={() => handleOrderDish(dish.id, dish.items.name, dish.items.in_stock)}
