@@ -13,7 +13,7 @@ const Menu = () => {
   const [selectedDish, setSelectedDish] = useState(null);
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  const [availableDishes, setAvailableDishes] = useState([]);
   const days = ["Available Dishes", "Sunday Specials", "Monday Specials", "Tuesday Specials", "wednesday Specials", "Thursday Specials", "Friday Specials", "Saturday Specials"];
   const scrollToDay = (day) => {
     refs[day]?.current?.scrollIntoView({ behavior: "smooth" });
@@ -25,7 +25,7 @@ const Menu = () => {
   const [activeDay, setActiveDay] = useState("sunday");
 
 
-  useEffect(() => {
+  /*useEffect(() => {
     const fetchDishes = async () => {
       try {
         setLoading(true);
@@ -33,15 +33,15 @@ const Menu = () => {
           .from("specials")
           .select("*,items(*)")
         if (error) throw error;
-        else {console.log("dish:",data)
-        setDishes(data || [])};
+        else {
+          setDishes(data || [])
+        };
       } catch (error) {
         console.error("Error fetching dishes:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchDishes();
     const observer = new IntersectionObserver(
       (entries) => {
@@ -66,7 +66,7 @@ const Menu = () => {
     });
 
     return () => observer.disconnect();
-  }, [page, refs]);
+  }, [refs]);
 
   // Filter dishes
   const filteredDishes = dishes.filter((dish) => {
@@ -74,7 +74,90 @@ const Menu = () => {
       dish.items.name && dish.items.name.toLowerCase().includes(search.toLowerCase()) &&
       (categoryFilter === "" || dish.category === categoryFilter)
     );
+  });*/
+  useEffect(() => {
+    const fetchDishes = async () => {
+      try {
+        setLoading(true);
+
+        const today = new Date().toLocaleDateString("en-US", { weekday: "long" }); // e.g., "Monday"
+
+        // Step 1: Fetch all specials with related items
+        const { data: specials, error: specialsError } = await supabase
+          .from("specials")
+          .select("*, items(*)");
+
+        if (specialsError) throw specialsError;
+
+        // Step 2: Get item IDs used in specials
+        const specialItemIds = specials.map((dish) => dish.items?.id).filter(Boolean);
+
+        // Step 3: Fetch all items NOT in specials
+        const { data: allItems, error: itemsError } = await supabase
+          .from("items")
+          .select("*")
+          .not("id", "in", `(${specialItemIds.join(",") || "NULL"})`);
+
+        if (itemsError) throw itemsError;
+
+        // Step 4: Create virtual "available" section
+        const availableTodaySpecials = specials
+          .filter((dish) => dish.day === today)
+          .map((dish) => ({
+            ...dish,
+            day: "Available",
+          }));
+
+        const availableOtherItems = allItems.map((item) => ({
+          items: item,
+          day: "Available",
+        }));
+
+        // Step 5: Combine everything
+        const allDishes = [...specials, ...availableOtherItems, ...availableTodaySpecials];
+
+        setDishes(allDishes);
+      } catch (error) {
+        console.error("Error fetching dishes:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDishes();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) {
+          const topSection = visible[0].target.getAttribute("data-day");
+          setActiveDay(topSection);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "0px 0px -50% 0px",
+        threshold: 0.5,
+      }
+    );
+
+    days.forEach((day) => {
+      const el = refs[day]?.current;
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [refs]);
+
+  const filteredDishes = dishes.filter((dish) => {
+    return (
+      dish.items?.name?.toLowerCase().includes(search.toLowerCase()) &&
+      (categoryFilter === "" || dish.items?.category === categoryFilter)
+    );
   });
+
 
   // Handle dish order
   const handleOrderDish = (dishId, dishName, available) => {
@@ -97,11 +180,17 @@ const Menu = () => {
       )
     );
   };
-  const dishesByDay = days.reduce((acc, day) => {
-    acc[day] = filteredDishes.filter(dish => dish.day && day.toLowerCase().includes(dish.day.toLowerCase()));
+  // const dishesByDay = days.reduce((acc, day) => {
+  //   acc[day] = filteredDishes.filter(dish => dish.day && day.toLowerCase().includes(dish.day.toLowerCase()));
+  //   return acc;
+  // }, {});
+  const dishesByDay = days.reduce((acc, dayLabel) => {
+    const key = dayLabel.split(" ")[0]; // "Monday", "Available", etc.
+    acc[dayLabel] = filteredDishes.filter(
+      (dish) => dish.day?.toLowerCase() === key.toLowerCase()
+    );
     return acc;
   }, {});
-
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
