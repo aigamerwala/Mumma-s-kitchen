@@ -6,6 +6,8 @@ import NavbarOrders from "../components/NavbarOrders";
 import { supabase } from "../supabaseClient";
 import "../styles/Menu.css"; // Ensure you have the styles for the loader and other components
 import { useCart } from "../context/CartContext";
+import toast from "react-hot-toast";
+
 
 const Menu = () => {
   const navigate = useNavigate();
@@ -17,6 +19,8 @@ const Menu = () => {
   const [loading, setLoading] = useState(true);
   const days = ["Available Dishes", "Sunday Specials", "Monday Specials", "Tuesday Specials", "Wednesday Specials", "Thursday Specials", "Friday Specials", "Saturday Specials"];
   const { addToCart } = useCart();
+  const { cartItems } = useCart();
+  console.log(cartItems);
 
   const scrollToDay = (day) => {
     refs[day]?.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,6 +33,24 @@ const Menu = () => {
 
 
   const [activeDay, setActiveDay] = useState("sunday");
+  const FloatingCart = () => {
+    const { cartItems } = useCart();
+    const navigate = useNavigate();
+
+    return (
+      <div
+        className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg cursor-pointer flex items-center gap-2 hover:bg-blue-700 transition-all z-50"
+        onClick={() => navigate("/cart")}
+      >
+        🛒View Cart
+        {cartItems.length > 0 && (
+          <span className="bg-red-500 text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+            {cartItems.length}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   useEffect(() => {
     const fetchDishes = async () => {
@@ -176,9 +198,9 @@ const Menu = () => {
               className="border p-2 rounded-md w-full md:w-auto"
             >
               <option value="">All Categories</option>
-              <option value="Veg">Vegetarian</option>
-              < option value="Non-Veg">Non-Vegetarian</option>
-              <option value="Dessert">Desserts</option>
+              <option value="veg">Vegetarian</option>
+              <option value="non-veg">Non-Vegetarian</option>
+              <option value="dessert">Desserts</option>
             </select>
           </div>
 
@@ -232,7 +254,15 @@ const Menu = () => {
                             {dish.items.in_stock ? "Order Now" : "Out of Stock"}
                           </button>
                           <button
-                            onClick={() => addToCart(dish.items)}
+                            onClick={() => {
+                              addToCart({
+                                id: dish.items.id,
+                                name: dish.items.name,
+                                price: dish.items.price,
+                                image: dish.items.image_url
+                              });
+                              toast.success(`${dish.items.name} added to cart!`);
+                            }}
                             className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
                           >
                             Add to Cart
@@ -306,7 +336,7 @@ const Menu = () => {
                   <strong>Price:</strong> ${selectedDish.items.price.toFixed(2)}
                 </p>
                 <p className="text-gray-600 mb-4">
-                  <strong>Description:</strong> {selectedDish.description}
+                  <strong>Description:</strong> {selectedDish.items.description}
                 </p>
                 <button
                   className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
@@ -325,7 +355,9 @@ const Menu = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div >
+      {/* Floating Cart Icon */}
+      <FloatingCart className="cursor-pointer" />
+    </div>
   );
 };
 
