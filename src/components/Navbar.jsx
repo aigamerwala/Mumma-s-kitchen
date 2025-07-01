@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,10 +11,12 @@ const Navbar = () => {
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
   const [showCalendar, setShowCalendar] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showMobileNotifications, setShowMobileNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const popupRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -110,6 +112,19 @@ const Navbar = () => {
       subscription.unsubscribe();
     };
   }, [isLoggedIn]);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        setShowNotifications(false);
+        setShowMobileNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const markAsRead = async (id) => {
     try {
@@ -153,7 +168,7 @@ const Navbar = () => {
   const mobileMenuItems = [
     ...navItems,
     { label: "Calendar", action: () => setShowCalendar(!showCalendar), ariaLabel: "Toggle calendar" },
-    { label: "Notifications", action: () => setShowNotifications(!showNotifications), ariaLabel: "Toggle notifications" },
+    { label: "Notifications", action: () => setShowMobileNotifications(!showMobileNotifications), ariaLabel: "Toggle notifications" },
   ];
 
   return (
@@ -225,7 +240,7 @@ const Navbar = () => {
           </div>
 
           {/* Notifications */}
-          <div className="relative">
+          <div className="relative" ref={popupRef}>
             <motion.button
               whileHover={{ scale: 1.1 }}
               onClick={() => setShowNotifications(!showNotifications)}
@@ -374,13 +389,14 @@ const Navbar = () => {
 
       {/* Notifications Popup (Accessible from Mobile Menu) */}
       <AnimatePresence>
-        {showNotifications && (
+        {showMobileNotifications && (
           <motion.div
+            ref={popupRef}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="fixed top-16 right-4 mt-2 bg-gray-800 text-white shadow-lg rounded-lg p-4 w-64 sm:w-80 max-h-96 overflow-y-auto z-50"
-            onClick={() => setShowNotifications(false)}
+            onClick={() => setShowMobileNotifications(false)}
           >
             <h3 className="font-semibold text-lg mb-2">Notifications</h3>
             {notifications.length === 0 ? (

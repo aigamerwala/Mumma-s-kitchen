@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../supabaseClient";
 import librarybg from "./../assets/logo.jpg";
+import { useCart } from "../context/CartContext";
 
 const Main = () => {
   const [featuredDishes, setFeaturedDishes] = useState([]);
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
   const [selectedDay, setSelectedDay] = useState(
     new Date().toLocaleString("en-US", { weekday: "long" })
   ); // Default to current day
@@ -119,13 +121,19 @@ const Main = () => {
                       {dish.items.name}
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">by {dish.items.chef}</p>
-                    <div>
+                    <div className="space-x-4 mt-4 relative items-center">
 
                       <button
                         className="mt-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         onClick={() => handleOrderDish(dish.items.name)}
                       >
                         Order Now
+                      </button>
+                      <button
+                        className="mt-auto px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                        onClick={() => addToCart(dish.items)}
+                      >
+                        Add to Cart
                       </button>
                     </div>
                   </div>
@@ -198,12 +206,18 @@ const Main = () => {
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">{item.items.description}</p>
                     <p className="text-sm text-gray-600 mt-1">Chef: {item.items.chef}</p>
-                    <div>
+                    <div className="space-x-4 mt-4 relative items-center">
                       <button
                         className="mt-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         onClick={() => handleOrderDish(item.items.name)}
                       >
                         Order Now
+                      </button>
+                      <button
+                        onClick={() => addToCart(item.items)}
+                        className="mt-auto px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                      >
+                        Add to Cart
                       </button>
                     </div>
                   </div>

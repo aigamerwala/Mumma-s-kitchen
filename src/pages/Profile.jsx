@@ -21,7 +21,7 @@ function Profile() {
     const [popup, setPopup] = useState(null);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-    const [booksData, setBooksData] = useState({
+    const [OrderData, setBooksData] = useState({
         issuedbooks: [],
         returnedbooks: [],
         returndue: [],
@@ -180,7 +180,7 @@ function Profile() {
     };
     const calculateTotalFees = (type) => {/* unchanged logic */ const today = new Date();
 
-        return booksData[type].reduce((total, book) => {
+        return OrderData[type].reduce((total, book) => {
             let lateFees = 0;
 
             if (!book.returned && book.due_date) {
@@ -210,9 +210,9 @@ function Profile() {
 
     const handlePayNow = () => {/* unchanged logic */
         setBooksData({
-            ...booksData,
-            returnedbooks: booksData.returnedbooks.map(book => ({ ...book, lateFees: 0 })),
-            returndue: booksData.returndue.map(book => ({ ...book, lateFees: 0 }))
+            ...OrderData,
+            returnedbooks: OrderData.returnedbooks.map(book => ({ ...book, lateFees: 0 })),
+            returndue: OrderData.returndue.map(book => ({ ...book, lateFees: 0 }))
         });
         setPaymentSuccess(true);
     };
@@ -306,7 +306,7 @@ function Profile() {
                 {popup && popup !== "requestedbooks" && (
                     <BooksPopupModal
                         popup={popup}
-                        booksData={booksData}
+                        OrderData={OrderData}
                         closePopup={() => setPopup(null)}
                         handleReturnBook={handleReturnBook}
                     />
@@ -318,7 +318,7 @@ function Profile() {
                 {popup === "requestedbooks" && (
                     <BooksPopupModal
                         popup={popup}
-                        booksData={booksData.requestedbooks}
+                        OrderData={OrderData.requestedbooks}
                         closePopup={() => setPopup(null)}
                         handleReturnBook={handleRequestedBook}
                     />

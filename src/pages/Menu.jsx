@@ -5,6 +5,8 @@ import { FaTimes } from "react-icons/fa";
 import NavbarOrders from "../components/NavbarOrders";
 import { supabase } from "../supabaseClient";
 import "../styles/Menu.css"; // Ensure you have the styles for the loader and other components
+import { useCart } from "../context/CartContext";
+
 const Menu = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -14,6 +16,7 @@ const Menu = () => {
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const days = ["Available Dishes", "Sunday Specials", "Monday Specials", "Tuesday Specials", "Wednesday Specials", "Thursday Specials", "Friday Specials", "Saturday Specials"];
+  const { addToCart } = useCart();
 
   const scrollToDay = (day) => {
     refs[day]?.current?.scrollIntoView({ behavior: "smooth" });
@@ -178,11 +181,11 @@ const Menu = () => {
               <option value="Dessert">Desserts</option>
             </select>
           </div>
-          
+
 
           {/* Dish Collection */}
           <div className="mt-6">
-            {loading ? (  
+            {loading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="loader"></div>
               </div>
@@ -227,6 +230,12 @@ const Menu = () => {
                               }`}
                           >
                             {dish.items.in_stock ? "Order Now" : "Out of Stock"}
+                          </button>
+                          <button
+                            onClick={() => addToCart(dish.items)}
+                            className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
+                          >
+                            Add to Cart
                           </button>
                           <button
                             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
