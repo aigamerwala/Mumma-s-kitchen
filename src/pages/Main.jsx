@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../supabaseClient";
 import librarybg from "./../assets/logo.jpg";
 import { useCart } from "../context/CartContext";
+import toast from "react-hot-toast";
+import React from "react";
+import FloatingCart from "../components/FloatingCart";
 
 const Main = () => {
   const [featuredDishes, setFeaturedDishes] = useState([]);
@@ -17,10 +20,10 @@ const Main = () => {
   const handleOrderDish = (dishName) => {
     const token = localStorage.getItem("supabase_token");
     if (!token) {
-      alert("Please log in to order a dish.");
+      toast.error("Please log in to order a dish.");
       return;
     }
-    alert(`You have successfully ordered "${dishName}"!`);
+    toast.success(`You have successfully ordered "${dishName}"!`);
   };
 
   useEffect(() => {
@@ -296,6 +299,7 @@ const Main = () => {
           ))}
         </div>
       </section>
+      <FloatingCart className="cursor-pointer" />
     </div>
   );
 };
