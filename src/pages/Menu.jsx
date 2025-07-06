@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
-import NavbarOrders from "../components/NavbarOrders";
 import { supabase } from "../supabaseClient";
-import "../styles/Menu.css"; // Ensure you have the styles for the loader and other components
 import { useCart } from "../context/CartContext";
+import NavbarOrders from "../components/NavbarOrders";
 import toast from "react-hot-toast";
-import FloatingCart from "../components/FloatingCart"; // Import the FloatingCart component
+import FloatingCart from "../components/FloatingCart";
+import "../styles/loader.css"; 
 
 const Menu = () => {
   const navigate = useNavigate();
@@ -17,9 +17,19 @@ const Menu = () => {
   const [selectedDish, setSelectedDish] = useState(null);
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const days = ["Available Dishes", "Sunday Specials", "Monday Specials", "Tuesday Specials", "Wednesday Specials", "Thursday Specials", "Friday Specials", "Saturday Specials"];
   const { addToCart } = useCart();
-  const { cartItems } = useCart();
+  const [activeDay, setActiveDay] = useState("sunday");
+  const days = [
+    "Available Dishes",
+    // "Desserts",
+    "Sunday Specials",
+    "Monday Specials",
+    "Tuesday Specials",
+    "Wednesday Specials",
+    "Thursday Specials",
+    "Friday Specials",
+    "Saturday Specials"
+  ];
 
   const scrollToDay = (day) => {
     refs[day]?.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,10 +39,6 @@ const Menu = () => {
       acc[day] = React.createRef();
       return acc;
     }, {})).current;
-
-
-  const [activeDay, setActiveDay] = useState("sunday");
-  
 
   useEffect(() => {
     const fetchDishes = async () => {
@@ -118,7 +124,7 @@ const Menu = () => {
 
   // Handle dish order
   const handleOrderDish = (dishId, dishName, available) => {
-    const token = localStorage.getItem("supabasetoken");
+    const token = localStorage.getItem("supabase_token");
     if (!token) {
       alert("You must be logged in to place an order.");
       navigate("/SignIn");
@@ -265,7 +271,6 @@ const Menu = () => {
               </div>
             )))}
           </div>
-
         </div>
       </div>
 

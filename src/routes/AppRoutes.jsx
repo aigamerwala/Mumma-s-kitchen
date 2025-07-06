@@ -5,13 +5,15 @@ import Main from "../pages/Main";
 import Profile from "../pages/Profile";
 import Menu from "../pages/Menu";
 import ProtectedRoute from "../components/ProtectedRoute";
-import AdminProfile from "../pages/AdminProfile";
+import AdminProfile from "../pages/Admin/AdminProfile";
 import Enquiry from "../pages/Support";
-import EnquiryReviews from "../pages/EnquiryReviews";
+import EnquiryReviews from "../pages/Admin/EnquiryReviews";
 import Dashboard from "../components/Dashboard";
 import Cart from "../pages/Cart";
 import HandleOrder from "../pages/HandleOrder";
 import Payment from "../components/Payment";
+import OrderSuccess from "../components/OrderSuccess";
+import ManualQRPayment from "../components/ManualQRPayment";
 
 const AppRoutes = () => {
     return (
@@ -31,6 +33,8 @@ const AppRoutes = () => {
             <Route path="/cart" element={<Cart />} />
             <Route path="/handle-order" element={<HandleOrder />} />
             <Route path="/payment" element={<Payment />} />
+            <Route path="/qr-payment" element={<ManualQRPayment orderId="abc123" totalAmount={1200} />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
             {/* 404 Page */}
             <Route path="*" element={<h1 className="mt-10 text-4xl text-center px-40 py-70 font-extrabold">404 - Page Not Found</h1>} />
         </Routes>

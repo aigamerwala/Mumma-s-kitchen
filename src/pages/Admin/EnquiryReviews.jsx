@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabaseClient";
 
 const EnquiryReviews = () => {
   const [reviews, setReviews] = useState([]);

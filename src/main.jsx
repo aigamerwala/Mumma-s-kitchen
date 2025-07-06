@@ -13,16 +13,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <CartProvider>
           <App />
-          <Toaster
-            position="top-right"
+          <Toaster 
+          position="top-right"
             reverseOrder={false}
             toastOptions={{
               style: {
                 background: '#363636',
                 color: '#fff',
               },
-            }}
-          />
+            }} />
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

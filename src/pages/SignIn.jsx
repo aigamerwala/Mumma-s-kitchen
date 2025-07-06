@@ -23,17 +23,12 @@ const SignIn = () => {
         setError("");
 
         try {
-            // 🔐 Supabase Sign In
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
-
             if (error) throw error;
-
-            // Store session token
             localStorage.setItem("supabase_token", data.session.access_token);
-
             navigate("/profile"); // Redirect to profile page
         } catch (err) {
             setError(err.message || "Login failed. Please try again.");

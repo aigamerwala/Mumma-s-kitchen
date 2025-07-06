@@ -1,15 +1,18 @@
-// 📄 Updated Profile.jsx (cleaned with modular modals)
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../supabaseClient";
-import "../styles/Menu.css"; // Ensure you have this CSS file for styles
+import "../styles/loader.css";
 
 // ✅ Modal imports
-// import BookRequestModal from "../components/modals/BookRequestModal";
 import EditProfileModal from "../components/modals/EditProfileModal";
-import BooksPopupModal from "../components/modals/BooksPopupModal";
-import PaymentSuccessModal from "../components/modals/PaymentSuccessModal";
+import OrdersModal from "../components/modals/OrdersModal";
+import MyAccountModal from "../components/modals/MyAccountModal";
+import SavedAddressesModal from "../components/modals/SavedAddressesModal";
+import PaymentMethodsModal from "../components/modals/PaymentMethodsModal";
+import TransactionsModal from "../components/modals/TransactionsModal";
+import Cart from "./Cart.jsx"
+import CartModal from "../components/modals/CartModal";
 
 function Profile() {
     const navigate = useNavigate();
@@ -19,14 +22,11 @@ function Profile() {
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({ name: "", email: "", password: "" });
     const [popup, setPopup] = useState(null);
-    const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-    const [OrderData, setBooksData] = useState({
-        issuedbooks: [],
-        returnedbooks: [],
-        returndue: [],
+    const [UserDishData, setUserDishData] = useState({
+        OrderedItems: [],
+        CartItems: [],
         transactions: [],
-        requestedbooks: [],
     });
 
     useEffect(() => {
@@ -45,55 +45,49 @@ function Profile() {
             setUser(userData);
             setUserPhoto(userData.profile_picture || "https://via.placeholder.com/150");
 
-            const fetchBooksData = async (userId) => {
-                const { data: issuedBooks } = await supabase
-                    .from("issued_books")
-                    .select("*, books(author,title)")
+            const fetchUserDishData = async (userId) => {
+                const { data: CartItems, error: cartError } = await supabase
+                    .from("cart")
+                    .select("*")
                     .eq("user_id", userId);
 
-                const { data: returnedBooks } = await supabase
-                    .from("issued_books")
-                    .select("*, books(title, author)")
-                    .eq("user_id", userId)
-                    .is("returned", true);
+                const { data: OrderedItems, error: ordersError } = await supabase
+                    .from('orders')
+                    .select(`*, 
+                        order_items( quantity, price,
+                        items( name, image_url
+                            ))`)
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
 
-                const { data: returnDueBooks } = await supabase
-                    .from("issued_books")
-                    .select("*, books(*)")
-                    .eq("user_id", userId)
-                    .is("return_date", null);
-                const { data: requestedBooks } = await supabase
-                    .from("book_requests")
-                    .select("*, books(*)")
-                    .eq("user_id", userId);
 
-                setBooksData(prev => ({
+                if (cartError) {
+                    console.error("Error fetching cart:", cartError);
+                }
+                if (ordersError) {
+                    console.error("Error fetching orders:", ordersError.message);
+                }
+                setUserDishData(prev => ({
                     ...prev,
-                    issuedbooks: issuedBooks || [],
-                    returnedbooks: returnedBooks || [],
-                    returndue: returnDueBooks || [],
-                    requestedbooks: requestedBooks || [],
+                    OrderedItems: OrderedItems || [],
+                    CartItems: CartItems || [],
                 }));
             };
+            console.log("User Dish Data:", UserDishData);
 
-            await fetchBooksData(userData.id);
-            setLoading(false);
-
-            const { data: transactionsData } = await supabase
+            const { data: transactionsData, error: transactionsError } = await supabase
                 .from("transactions")
-                .select("*, books(title, author)")
-                .eq("user_id", userData.id)
-                .order("action_date", { ascending: false });
-
-            setBooksData(prev => ({ ...prev, transactions: transactionsData || [] }));
-
-            const { data: requestedBooks } = await supabase
-                .from("book_requests")
                 .select("*")
-                .eq("user_id", userData.id);
+                .eq("user_id", userData.id)
+                .order("created_at", { ascending: false });
+            if (transactionsError) {
+                console.error("Error fetching transactions:", transactionsError);
+            }
 
-            setBooksData(prev => ({ ...prev, requestedbooks: requestedBooks || [] }));
+            setUserDishData(prev => ({ ...prev, transactions: transactionsData || [] }));
 
+            await fetchUserDishData(userData.id);
+            setLoading(false);
             if (userData.role === "admin") navigate("/adminprofile", { replace: true });
         };
 
@@ -131,94 +125,6 @@ function Profile() {
         setUserPhoto(imageUrl);
         setUser({ ...user, profile_picture: imageUrl });
         alert("Profile picture updated successfully!");
-    };
-
-    const handleReturnBook = async (bookId) => {
-        // Fetch the book to get current copies
-        console.log("Book ID:", bookId);
-        const { data: book, error: fetchError } = await supabase
-            .from("issued_books")
-            .select("*,books(*)")
-            .eq("book_id", bookId)
-        // .update({ returned: true })
-        // .single();
-
-        if (fetchError) {
-            console.error("Failed to fetch book:", fetchError.message);
-            console.log(bookId)
-            return;
-        }
-        console.log("Fetched book:", book[0]);
-        const { error: updateError } = await supabase
-            .from("books")
-            .update({
-                copies: book[0].books.copies + 1,
-            })
-            .eq("id", bookId);
-
-        if (updateError) {
-            console.error("Failed to return book:", updateError.message);
-            return;
-        }
-
-        const { error: transactionsError } = await supabase.from("transactions").insert([
-            {
-                user_id: book[0].user_id,
-                book_id: book[0].book_id,
-                action: "book return request sent for approval",
-                action_date: new Date().toISOString(),
-            }
-        ]);
-        console.log("Transaction data:", book[0].user_id, book[0].book_id, book[0].lateFees || 0);
-        if (transactionsError) {
-            console.error("Transaction insertion failed:", transactionsError.message);
-            return;
-        }
-
-        // Refresh data
-        window.location.reload(); // or call fetchProfile() if you move it out
-    };
-    const calculateTotalFees = (type) => {/* unchanged logic */ const today = new Date();
-
-        return OrderData[type].reduce((total, book) => {
-            let lateFees = 0;
-
-            if (!book.returned && book.due_date) {
-                const dueDate = new Date(book.due_date);
-
-                if (today > dueDate) {
-                    const lateDays = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
-                    lateFees = lateDays * 5; // $5 per day
-                }
-            } else if (book.lateFees) {
-                lateFees = book.lateFees;
-            }
-
-            return total + lateFees;
-        }, 0);
-    };
-    const handleRequestedBook = async (bookId) => {/* unchanged logic */
-        const { error } = await supabase
-            .from("book_requests")
-            .select("*")
-            .eq("user_id", user.id)
-    }
-
-    const totalReturnedFees = calculateTotalFees("returnedbooks");
-    const totalDueFees = calculateTotalFees("returndue");
-    const totalLateFees = totalReturnedFees + totalDueFees;
-
-    const handlePayNow = () => {/* unchanged logic */
-        setBooksData({
-            ...OrderData,
-            returnedbooks: OrderData.returnedbooks.map(book => ({ ...book, lateFees: 0 })),
-            returndue: OrderData.returndue.map(book => ({ ...book, lateFees: 0 }))
-        });
-        setPaymentSuccess(true);
-    };
-    const closePaymentSuccess = () => {/* unchanged logic */
-        setLateFeesPopupetPaymentSuccess(false);
-        setLateFeesPopup(false);
     };
 
     if (loading) return (<div className="flex justify-center items-center h-64">
@@ -269,19 +175,19 @@ function Profile() {
 
                 {/* Main Buttons */}
                 <div className="flex flex-col items-center mt-6 gap-4">
-                    {["My Account", "Orders", "Saved Addresses", "Payment Methods", "Transactions"].map((label) => (
+                    {["My Account", "Orders", "Saved Addresses", "Payment Methods", "Transactions", "Your Cart"].map((label) => (
                         <motion.button
                             key={label}
                             whileHover={{ scale: 1.05, boxShadow: "0px 0px 8px rgba(0, 255, 255, 0.6)" }}
                             className={`w-64 bg-gray-800 text-white px-5 py-3 rounded-lg text-lg font-semibold transition-all hover:bg-gray-700 ${label === "Late Fees" && totalLateFees === 0 ? "opacity-50 cursor-not-allowed" : ""
                                 }`}
                             onClick={() => {
-                                if (label === "My Account") openPopup("issuedbooks");
-                                if (label === "Orders") openPopup("returnedbooks");
-                                if (label === "Saved Addresses") openPopup("returndue");
+                                if (label === "My Account") openPopup("myaccount");
+                                if (label === "Orders") openPopup("orders");
+                                if (label === "Saved Addresses") openPopup("savedaddresses");
                                 if (label === "Transactions") openPopup("transactions");
-                                if (label === "Payment Methods") openPopup("requestedbooks");
-                                if (label === "Reserved Books") openPopup("reservedbooks");
+                                if (label === "Payment Methods") openPopup("paymentmethods");
+                                if (label === "Your Cart") openPopup("yourcart");
                             }}
                         >
                             {label}
@@ -300,31 +206,50 @@ function Profile() {
                     />
                 )}
             </AnimatePresence>
-
-            {/* ✅ Books & Transactions Modal */}
             <AnimatePresence>
-                {popup && popup !== "requestedbooks" && (
-                    <BooksPopupModal
-                        popup={popup}
-                        OrderData={OrderData}
-                        closePopup={() => setPopup(null)}
-                        handleReturnBook={handleReturnBook}
+                {popup === "orders" && (
+                    <OrdersModal
+                        onClose={() => setPopup(null)}
+                        orders={UserDishData.OrderedItems}
+                    />
+                )}
+                {popup === "myaccount" && (
+                    <MyAccountModal
+                        onClose={() => setPopup(null)}
+                        user={user}
+                    />
+                )}
+                {popup === "savedaddresses" && (
+                    <SavedAddressesModal
+                        onClose={() => setPopup(null)}
+                        userId={user.id}
+                    />
+                )}
+                {popup === "paymentmethods" && (
+                    <PaymentMethodsModal
+                        onClose={() => setPopup(null)}
+                        userId={user.id}
+                    />
+                )}
+                {popup === "transactions" && (
+                    <TransactionsModal
+                        onClose={() => setPopup(null)}
+                        transactions={UserDishData.transactionsData || []}
+                    />
+                )}
+                {popup === "yourcart" && (
+                    <Cart
+                        onClose={() => setPopup(null)}
+                        cartItems={UserDishData.CartItems}
                     />
                 )}
             </AnimatePresence>
-
-            {/* ✅ Requested Books */}
-            <AnimatePresence>
-                {popup === "requestedbooks" && (
-                    <BooksPopupModal
-                        popup={popup}
-                        OrderData={OrderData.requestedbooks}
-                        closePopup={() => setPopup(null)}
-                        handleReturnBook={handleRequestedBook}
-                    />
-                )}
-            </AnimatePresence>
-
+            {/* ✅ Loader for async operations */}
+            {loading && (
+                <div className="flex justify-center items-center h-64">
+                    <div className="loader"></div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,21 +1,23 @@
 // src/pages/Cart.jsx
 import { useCart } from "../context/CartContext";
 import { Link } from "react-router-dom";
+import React from "react";
 
 const CartItem = ({ item, removeFromCart, updateQuantity }) => {
+  
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
     if (value > 0) {
       updateQuantity(item.id, value);
     }
   };
-
+  
   return (
     <div className="flex items-center justify-between p-4 bg-white shadow-md rounded-lg mb-4">
       <div className="flex items-center space-x-4">
         {/* Placeholder for product image */}
         <img
-          src={item.image || "https://via.placeholder.com/80"}
+          src={item.image_url || "https://via.placeholder.com/80"}
           alt={item.name}
           className="w-20 h-20 object-cover rounded"
         />
@@ -48,9 +50,7 @@ const CartItem = ({ item, removeFromCart, updateQuantity }) => {
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity } = useCart();
-
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
   return (
     <div className="container mx-auto py-16 px-4 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Cart</h1>

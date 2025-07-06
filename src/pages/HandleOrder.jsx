@@ -9,7 +9,7 @@ const CartItemSummary = ({ item }) => {
     <div className="flex items-center justify-between p-4 bg-white shadow-md rounded-lg mb-4">
       <div className="flex items-center space-x-4">
         <img
-          src={item.image || "https://via.placeholder.com/80"}
+          src={item.image_url || "https://via.placeholder.com/80"}
           alt={item.name}
           className="w-16 h-16 object-cover rounded"
         />
@@ -68,7 +68,7 @@ const HandleOrder = () => {
       if (itemsError) throw itemsError;
 
       clearCart();
-      navigate("/payment");
+      navigate(`/payment?order_id=${order.id}`);
     } catch (err) {
       console.error("Order error:", err.message);
       setError("Failed to place order. Please try again.");
