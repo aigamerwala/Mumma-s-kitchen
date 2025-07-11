@@ -265,8 +265,8 @@ const Main = () => {
           </div>
           <div className="md:w-1/2">
             <img
-              src="/assets/kitchen.jpg"
-              alt="Mumma's Kitchen"
+              src="/UPCOMING.png"
+              alt="Dine In coming soon..."
               className="h-100 w-150 rounded-xl shadow-md"
               onError={(e) => (e.target.src = "/placeholder.jpg")}
             />

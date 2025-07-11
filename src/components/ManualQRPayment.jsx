@@ -1,25 +1,26 @@
-// src/components/ManualQRPayment.jsx
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../supabaseClient";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
-const ManualQRPayment = ({ orderId, totalAmount }) => {
-  const { user } = useAuth();
+const PaymentForm = ({ orderId, totalAmount, user, error, setError, setSuccess,loading, setLoading, navigate }) => {
   const [transactionId, setTransactionId] = useState("");
   const [screenshot, setScreenshot] = useState(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const handleScreenshotChange = (e) => {
     setScreenshot(e.target.files[0]);
   };
 
+  const handleCustomFileClick = () => {
+    fileInputRef.current.click();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!transactionId || !screenshot) {
-      setError("Please enter transaction ID and upload screenshot");
+      setError("Please enter transaction ID and upload a screenshot");
       return;
     }
 
@@ -28,7 +29,7 @@ const ManualQRPayment = ({ orderId, totalAmount }) => {
 
     try {
       const filePath = `${user.id}/manual_payments/${Date.now()}_${screenshot.name}`;
-      const { data: uploadData, error: uploadError } = await supabase
+      const { error: uploadError } = await supabase
         .storage
         .from("payment-screenshots")
         .upload(filePath, screenshot);
@@ -52,8 +53,8 @@ const ManualQRPayment = ({ orderId, totalAmount }) => {
 
       if (insertError) throw insertError;
 
-      alert("Payment proof submitted! We’ll verify and update status shortly.");
-      navigate("/profile");
+      setSuccess("Payment proof submitted! We’ll verify and update status shortly.");
+      setTimeout(() => navigate("/profile"), 2000); // Redirect after 2 seconds
     } catch (err) {
       console.error("Payment error:", err.message);
       setError("Something went wrong. Please try again.");
@@ -63,49 +64,116 @@ const ManualQRPayment = ({ orderId, totalAmount }) => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
-      <h2 className="text-2xl font-bold mb-4">Pay via UPI QR</h2>
-      <p className="text-gray-600 mb-2">Scan the QR below and make a payment of ₹{totalAmount}</p>
-
-      <img
-        src="/your-qr-code.png" // Replace with your QR image path
-        alt="QR Code"
-        className="w-60 mx-auto my-4 border border-gray-300"
-      />
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-medium">UPI Transaction ID</label>
-          <input
-            type="text"
-            value={transactionId}
-            onChange={(e) => setTransactionId(e.target.value)}
-            className="w-full border p-2 rounded"
-            required
-          />
-        </div>
-        <div>
-          <label className="block font-medium">Upload Payment Screenshot</label>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <label htmlFor="transactionId" className="block text-gray-700 font-medium mb-1">
+          UPI Transaction ID
+        </label>
+        <input
+          type="text"
+          id="transactionId"
+          value={transactionId}
+          onChange={(e) => setTransactionId(e.target.value)}
+          className={`w-full px-4 py-2 rounded-md border ${
+            !transactionId && error ? "border-red-500" : "border-gray-300"
+          } focus:outline-none focus:ring-2 focus:ring-green-500`}
+          required
+          aria-required="true"
+          placeholder="Enter UPI Transaction ID"
+        />
+      </div>
+      <div>
+        <label htmlFor="screenshot" className="block text-gray-700 font-medium mb-1">
+          Upload Payment Screenshot
+        </label>
+        <div className="flex items-center space-x-2">
           <input
             type="file"
+            id="screenshot"
             accept="image/*"
             onChange={handleScreenshotChange}
-            className="w-full"
+            className="hidden"
             required
+            aria-required="true"
+            ref={fileInputRef}
           />
+          <button
+            type="button"
+            onClick={handleCustomFileClick}
+            className={`w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md border ${
+              !screenshot && error ? "border-red-500" : "border-gray-300"
+            } hover:bg-gray-200 transition text-left`}
+          >
+            {screenshot ? screenshot.name : "Choose an image"}
+          </button>
         </div>
+      </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className={`w-full py-3 text-white rounded-md transition text-lg font-medium ${
+          loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
+        }`}
+        aria-label="Submit payment proof"
+      >
+        {loading ? "Submitting..." : "Submit Payment Proof"}
+      </button>
+    </form>
+  );
+};
 
-        {error && <p className="text-red-500">{error}</p>}
+const ManualQRPayment = ({ orderId, totalAmount }) => {
+  const { user } = useAuth();
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-3 rounded text-white font-semibold ${loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"}`}
+  return (
+    <motion.div
+      className="container mx-auto py-16 px-4 sm:px-6 lg:px-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="max-w-xl mx-auto bg-white shadow-lg rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Pay via UPI QR</h2>
+        <p className="text-gray-600 mb-4">
+          Scan the QR code below to make a payment of ₹{totalAmount.toFixed(2)}
+        </p>
+        <img
+          src="/QR.jpg" 
+          alt="UPI QR Code for payment"
+          className="w-64 mx-auto my-6 border border-gray-300 rounded-lg shadow-md"
+        />
+        {error && (
+          <p className="text-red-500 mb-4" role="alert">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p className="text-green-500 mb-4" role="alert">
+            {success}
+          </p>
+        )}
+        <PaymentForm
+          orderId={orderId}
+          totalAmount={totalAmount}
+          user={user}
+          error={error} // Pass error as a prop
+          setError={setError}
+          setSuccess={setSuccess}
+          setLoading={setLoading}
+          navigate={navigate}
+        />
+        <Link
+          to="/profile"
+          className="mt-4 inline-block text-blue-500 hover:text-blue-700 font-medium"
         >
-          {loading ? "Submitting..." : "Submit Payment Proof"}
-        </button>
-      </form>
-    </div>
+          Back to Profile
+        </Link>
+      </div>
+    </motion.div>
   );
 };
 

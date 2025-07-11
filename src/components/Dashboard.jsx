@@ -20,8 +20,8 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const [stats, setStats] = useState({
-    totalBooks: 0,
-    availableBooks: 0,
+    totalitems: 0,
+    availableitems: 0,
     borrowedBooks: 0,
     newBooks: 0,
     overdueBooks: 0,
@@ -32,41 +32,41 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
-        // Total Books
-        const { count: totalBooks } = await supabase
-          .from("books")
+        // Total items
+        const { count: totalitems } = await supabase
+          .from("items")
           .select("*", { count: "exact", head: true });
-        console.log("Total Books:", totalBooks);
-        // Available Books (copies > 0)
-        const { count: availableBooks } = await supabase
-          .from("books")
+        console.log("Total items:", totalitems);
+        // Available items (copies > 0)
+        const { count: availableitems } = await supabase
+          .from("items")
           .select("*", { count: "exact", head: true })
           .gt("copies", 0);
-        console.log("Available Books:", availableBooks);
+        console.log("Available items:", availableitems);
 
-        // Borrowed Books (issued_books where returned is false)
+        // Borrowed items (issued_books where returned is false)
         const { count: borrowedBooks } = await supabase
           .from("issued_books")
           .select("*", { count: "exact", head: true })
           .eq("returned", false);
-        console.log("Borrowed Books:", borrowedBooks);
+        console.log("Borrowed items:", borrowedBooks);
 
-        // New Books (added in the last 30 days)
+        // New items (added in the last 30 days)
         const lastMonth = new Date();
         lastMonth.setDate(lastMonth.getDate() - 30);
         const { count: newBooks } = await supabase
-          .from("books")
+          .from("items")
           .select("*", { count: "exact", head: true })
           .gte("created_at", lastMonth.toISOString());
-        console.log("New Books:", newBooks);
-        // Overdue Books (due_date < today and returned is false)
+        console.log("New items:", newBooks);
+        // Overdue items (due_date < today and returned is false)
         const today = new Date().toISOString();
         const { count: overdueBooks } = await supabase
           .from("issued_books")
           .select("*", { count: "exact", head: true })
           .lt("due_date", today)
           .eq("returned", false);
-        console.log("Overdue Books:", overdueBooks);
+        console.log("Overdue items:", overdueBooks);
         // Active Members (users table, role === "user")
         const { count: activeMembers } = await supabase
           .from("users")
@@ -82,13 +82,13 @@ const Dashboard = () => {
         console.log("Total Fines:", totalFines);
         // Total copies available (sum of copies > 0)
         const { data: allBooks } = await supabase
-          .from("books")
+          .from("items")
           .select("copies");
 
         const totalCopiesAvailable = allBooks?.reduce((sum, book) => sum + (book.copies || 0), 0) || 0;
         setStats({
-          totalBooks,
-          availableBooks,
+          totalitems,
+          availableitems,
           borrowedBooks,
           newBooks,
           overdueBooks,
@@ -107,7 +107,7 @@ const Dashboard = () => {
 
   // Chart data and options
   const doughnutData = {
-    labels: ['New Books', 'Issued Books', 'Returned Books', 'Pending Books'],
+    labels: ['New items', 'Issued items', 'Returned items', 'Pending items'],
     datasets: [{
       data: [30, 40, 20, 10],
       backgroundColor: ['#60a5fa', '#3b82f6', '#2563eb', '#1e40af'],
@@ -119,8 +119,8 @@ const Dashboard = () => {
   const barData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
-      { label: 'Books Borrowed', data: [120, 150, 180, 200, 170, 190], backgroundColor: '#60a5fa', borderRadius: 5 },
-      { label: 'Books Returned', data: [100, 130, 160, 180, 150, 170], backgroundColor: '#2563eb', borderRadius: 5 },
+      { label: 'items Borrowed', data: [120, 150, 180, 200, 170, 190], backgroundColor: '#60a5fa', borderRadius: 5 },
+      { label: 'items Returned', data: [100, 130, 160, 180, 150, 170], backgroundColor: '#2563eb', borderRadius: 5 },
     ],
   };
 
@@ -142,7 +142,7 @@ const Dashboard = () => {
   const barOptions = {
     ...chartOptions,
     scales: {
-      y: { beginAtZero: true, title: { display: true, text: 'Number of Books', font: { family: 'Inter' } } },
+      y: { beginAtZero: true, title: { display: true, text: 'Number of items', font: { family: 'Inter' } } },
       x: { title: { display: true, text: 'Months', font: { family: 'Inter' } } },
     },
   };
@@ -173,7 +173,7 @@ const Dashboard = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search books, users, or transactions..."
+            placeholder="Search items, users, or transactions..."
             className="px-4 py-3 w-full md:w-80 border-2 border-blue-300 rounded-full focus:outline-none focus:border-blue-500 transition duration-300 bg-white shadow-sm"
           />
           <div className="flex gap-4">
@@ -202,10 +202,10 @@ const Dashboard = () => {
       {/* Dashboard Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {[
-          { title: 'Total Books', value: stats.totalBooks, icon: BookOpenIcon, color: 'blue-400', tooltip: 'Total books in collection' },
-          { title: 'Available Books', value: stats.availableBooks, icon: BuildingLibraryIcon, color: 'blue-500', tooltip: 'Books ready to borrow' },
-          { title: 'Borrowed Books', value: stats.borrowedBooks, icon: ArrowUpIcon, color: 'blue-600', tooltip: 'Books currently borrowed' },
-          { title: 'New Books', value: stats.newBooks, icon: PlusIcon, color: 'blue-700', tooltip: 'New additions this month' },
+          { title: 'Total items', value: stats.totalitems, icon: BookOpenIcon, color: 'blue-400', tooltip: 'Total items in collection' },
+          { title: 'Available items', value: stats.availableitems, icon: BuildingLibraryIcon, color: 'blue-500', tooltip: 'items ready to borrow' },
+          { title: 'Borrowed items', value: stats.borrowedBooks, icon: ArrowUpIcon, color: 'blue-600', tooltip: 'items currently borrowed' },
+          { title: 'New items', value: stats.newBooks, icon: PlusIcon, color: 'blue-700', tooltip: 'New additions this month' },
         ].map((item, index) => (
           <motion.div
             key={item.title}
@@ -232,14 +232,14 @@ const Dashboard = () => {
 
       {/* Content Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto mt-12">
-        {/* Books Distribution Chart */}
+        {/* items Distribution Chart */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
           className="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-300 hover:shadow-xl transition-all duration-300 h-96"
         >
-          <h2 className="text-xl font-semibold text-blue-800 text-center mb-4">Books Distribution</h2>
+          <h2 className="text-xl font-semibold text-blue-800 text-center mb-4">items Distribution</h2>
           <div className="h-64">
             <Doughnut data={doughnutData} options={doughnutOptions} />
           </div>
@@ -267,7 +267,7 @@ const Dashboard = () => {
         >
           <h2 className="text-xl font-semibold text-blue-800 text-center mb-4">Quick Stats</h2>
           <div className="flex flex-col gap-4 flex-grow">
-            <div className="text-gray-600">Overdue Books: <span className="font-bold text-blue-600">{stats.overdueBooks}</span></div>
+            <div className="text-gray-600">Overdue items: <span className="font-bold text-blue-600">{stats.overdueBooks}</span></div>
             <div className="text-gray-600">
               Total Copies Available: <span className="font-bold text-blue-600">{stats.totalCopiesAvailable}</span>
             </div>
