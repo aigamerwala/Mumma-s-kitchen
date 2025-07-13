@@ -88,7 +88,7 @@ function Profile() {
 
             await fetchUserDishData(userData.id);
             setLoading(false);
-            if (userData.role === "admin") navigate("/adminprofile", { replace: true });
+            if (userData.role === "admin") navigate("/admin/profile", { replace: true });
         };
 
         fetchProfile();

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
-import { supabase } from '../supabaseClient'; // Adjust the import path as necessary
+import { supabase } from '../../supabaseClient'; // Adjust the import path as necessary
 // import { BookOpenIcon, LibraryIcon, ArrowUpIcon, PlusIcon } from '@heroicons/react/outline';
 import {
   BookOpenIcon,

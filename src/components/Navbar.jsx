@@ -159,8 +159,8 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { path: "/", label: "Home" },
-    { path: isAdmin ? "/dashboard" : "/menu", label: isAdmin ? "Dashboard" : "Menu" },
+    { path: isAdmin ? "/admin/orders" : "/", label: isAdmin ? "Orders" : "Home" },
+    { path: isAdmin ? "/admin/dashboard" : "/menu", label: isAdmin ? "Dashboard" : "Menu" },
     { path: isAdmin ? "/enquiry-reviews" : "/support", label: isAdmin ? "Support Tickets" : "Support" },
     { path: "/profile", label: "Profile" },
   ];

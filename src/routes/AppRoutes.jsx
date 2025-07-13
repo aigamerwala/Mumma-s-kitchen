@@ -8,13 +8,14 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import AdminProfile from "../pages/Admin/AdminProfile";
 import Enquiry from "../pages/Support";
 import EnquiryReviews from "../pages/Admin/EnquiryReviews";
-import Dashboard from "../components/Dashboard";
+import Dashboard from "../pages/Admin/Dashboard";
 import Cart from "../pages/Cart";
 import HandleOrder from "../pages/HandleOrder";
 import Payment from "../components/Payment";
 import OrderSuccess from "../components/OrderSuccess";
 import ManualQRPayment from "../components/ManualQRPayment";
 import AdminVerifyPayments from "../pages/Admin/AdminVerifyPayments";
+import AdminOrders from "../pages/Admin/AdminOrders";
 
 const AppRoutes = () => {
     return (
@@ -27,16 +28,17 @@ const AppRoutes = () => {
             <Route path="/main" element={<Main />} />
             <Route path="/menu" element={<Menu />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/adminprofile" element={<AdminProfile />} />
+            <Route path="/admin/profile" element={<AdminProfile />} />
             <Route path="/support" element={<Enquiry />} />
             <Route path="/enquiry-reviews" element={<EnquiryReviews />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin/dashboard" element={<Dashboard />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/handle-order" element={<HandleOrder />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/qr-payment" element={<ManualQRPayment orderId="abc123" totalAmount={1200} />} />
             <Route path="/admin/payments" element={<AdminVerifyPayments />} />
             <Route path="/order-success" element={<OrderSuccess />} />
+            <Route path="/admin/orders" element={<AdminOrders />} />
             {/* 404 Page */}
             <Route path="*" element={<h1 className="mt-10 text-4xl text-center px-40 py-70 font-extrabold">404 - Page Not Found</h1>} />
         </Routes>
