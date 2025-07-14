@@ -11,17 +11,17 @@ const OrderCard = ({ order, updateOrderStatus }) => {
   const [rejectionReason, setRejectionReason] = useState("");
 
   const handleAccept = async (id) => {
-    if (!window.confirm("Are you sure you want to accept this order?")) return;
+    // if (!window.confirm("Are you sure you want to accept this order?")) return;
+    console.log(order);
     setIsLoading(true);
     setFeedback("");
-
     try {
       const { error } = await supabase
         .from("orders")
-        .update({ status: "accepted", rejection_reason: null })
+        .update({ status: "accepted" })
         .eq("id", id);
 
-      if (error) throw error;
+      if (error) console.log(error);
       setFeedback("Order accepted successfully");
       setTimeout(() => updateOrderStatus(id, "accepted", null), 1500);
     } catch (err) {
@@ -37,21 +37,20 @@ const OrderCard = ({ order, updateOrderStatus }) => {
       setFeedback("Please provide a rejection reason");
       return;
     }
-
     setIsLoading(true);
     setFeedback("");
 
     try {
       const { error } = await supabase
         .from("orders")
-        .update({ status: "Rejected", rejection_reason: rejectionReason })
+        .update({ status: "rejected", rejection_reason: rejectionReason })
         .eq("id", id);
 
       if (error) throw error;
       setFeedback("Order rejected successfully");
       setShowRejectModal(false);
       setRejectionReason("");
-      setTimeout(() => updateOrderStatus(id, "Rejected", rejectionReason), 1500);
+      setTimeout(() => updateOrderStatus(id, "rejected", rejectionReason), 1500);
     } catch (err) {
       console.error("Reject error:", err.message);
       setFeedback("Failed to reject order");
@@ -85,9 +84,9 @@ const OrderCard = ({ order, updateOrderStatus }) => {
             <strong>Status:</strong>{" "}
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
-                order.status === "Accepted"
+                order.status === "accepted"
                   ? "bg-green-100 text-green-800"
-                  : order.status === "Rejected"
+                  : order.status === "rejected"
                   ? "bg-red-100 text-red-800"
                   : "bg-yellow-100 text-yellow-800"
               }`}
@@ -107,7 +106,7 @@ const OrderCard = ({ order, updateOrderStatus }) => {
             className={`px-4 py-2 rounded-md text-white font-medium ${
               isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
             }`}
-            disabled={isLoading || order.status !== "Pending"}
+            disabled={isLoading || order.status !== "pending"}
             aria-label={`Accept order ${order.id}`}
           >
             Accept
@@ -117,7 +116,7 @@ const OrderCard = ({ order, updateOrderStatus }) => {
             className={`px-4 py-2 rounded-md text-white font-medium ${
               isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"
             }`}
-            disabled={isLoading || order.status !== "Pending"}
+            disabled={isLoading || order.status !== "pending"}
             aria-label={`Reject order ${order.id}`}
           >
             Reject
