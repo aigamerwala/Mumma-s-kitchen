@@ -28,16 +28,17 @@ export const Footer = () => {
         {/* Contact Information */}
         <div className="footer-section contact">
           <h3>📞 Contact Us</h3>
-          <p>Sector 15, Faridabad, Haryana</p>
-          <p>Phone: +91 1234567890</p>
-          <p>Email: mumma.kitchen@gmail.com</p>
+          <p>Sector 14, Faridabad, Haryana</p>
+          <p>Near by market PNB bank, faridabad dental care.</p>
+          <p>Phone: +91 9315293470, +91 8901988707</p>
+          <p>Email: sunitadavi9315280114@gmail.com</p>
         </div>
 
         {/* Newsletter Subscription */}
         <div className="footer-section newsletter">
           <h3>📩 Stay Updated</h3>
           <input type="email" placeholder="Enter your email" />
-          <button>Subscribe</button>
+          <button onClick={() => {console.log("Subscribed")}}>Subscribe</button>
         </div>
       </div>
 

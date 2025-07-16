@@ -66,7 +66,7 @@ const HandleOrder = () => {
       const { error: itemsError } = await supabase.from("order_items").insert(orderItemsData);
 
       if (itemsError) throw itemsError;
-
+      
       clearCart();
       navigate(`/payment?order_id=${order.id}`);
     } catch (err) {
