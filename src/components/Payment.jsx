@@ -174,8 +174,21 @@ const Payment = () => {
         .eq("id", orderId);
 
       if (updateError) throw updateError;
-      setFeedback("Payment processed successfully");
-      setTimeout(() => navigate("/order-success"), 1500);
+      if (paymentMethod === "Razorpay") {
+        setFeedback("Razorpay payment is under maintainance. Please try again later.");
+        // Handle Razorpay specific logic
+      }
+      if (paymentMethod === "UPI") {
+        setFeedback("Please scan the UPI QR code to complete the payment.");
+        setTimeout(() => {
+          navigate("/qr-payment");
+        }, 3000);
+        // Handle UPI specific logic
+      }
+      if (paymentMethod === "COD") {
+        setFeedback("Payment processed successfully via Cash on Delivery, please have the exact amount ready.");
+        // Handle Cash on Delivery logic
+      }
     } catch (err) {
       console.error("Payment failed:", err.message);
       setError("Payment failed. Please try again.");

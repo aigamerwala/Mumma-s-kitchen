@@ -48,7 +48,7 @@ const PaymentForm = ({ orderId, totalAmount, user, error, setError, setSuccess,l
           order_id: orderId,
           transaction_id: transactionId,
           screenshot_url: publicUrl,
-          status: "Pending"
+          status: "pending"
         }]);
 
       if (insertError) throw insertError;

@@ -16,7 +16,6 @@ import OrderSuccess from "../components/OrderSuccess";
 import ManualQRPayment from "../components/ManualQRPayment";
 import AdminVerifyPayments from "../pages/Admin/AdminVerifyPayments";
 import AdminOrders from "../pages/Admin/AdminOrders";
-import InvoiceTest from "../pages/InvoiceTest";
 
 const AppRoutes = () => {
     return (
@@ -40,7 +39,6 @@ const AppRoutes = () => {
             <Route path="/admin/payments" element={<AdminVerifyPayments />} />
             <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="/admin/orders" element={<AdminOrders />} />
-            <Route path="/invoice-test" element={<InvoiceTest />} />
             {/* 404 Page */}
             <Route path="*" element={<h1 className="mt-10 text-4xl text-center px-40 py-70 font-extrabold">404 - Page Not Found</h1>} />
         </Routes>
